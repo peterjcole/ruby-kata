@@ -43,7 +43,13 @@ class Supermarket
   end
 
   def scan(name)
-    for_sale(name) ? @scanned.push(retrieve(name)) : "#{name} is not for sale!"
+    if for_sale(name)
+      item = retrieve(name)
+      @scanned.push(item) 
+      return "Scanned: #{item.name} at #{format(item.price)}.\n#{total}"
+    else 
+      "#{name} is not for sale!"
+    end
   end
 
   def total()
@@ -51,7 +57,7 @@ class Supermarket
   end
 
   def pay(amount_paid)
-    @total_paid = @total_paid + BigDecimal(amount_paid, 2)
+    @total_paid += BigDecimal(amount_paid, 2)
     if change >= 0
       return "Total cost: #{format(add_up)}. Amount paid: #{format(@total_paid)}. Your change: #{format(change)}"
     else
@@ -71,7 +77,7 @@ class Supermarket
   end
 
   def settled
-    BigDecimal(@total_paid) - add_up >= 0
+    @total_paid - add_up >= 0
   end
 
   def leave
@@ -120,12 +126,9 @@ def go_shopping(items)
     action = get_action
     case action
     when  'scan', 'price', 'pay'
-      argument = get_argument(action)
-      action_method = action.to_sym
-      puts supermarket.send(action_method, argument)
+      puts supermarket.send(action.to_sym, get_argument(action))
     when 'total', 'list', 'leave'
       puts supermarket.send(action.to_sym)
-
     end
   end
 end
@@ -139,7 +142,6 @@ def get_argument(action)
   puts "Enter what you want to #{action}"
   gets.chomp
 end
-
 
 test_merch = [
   Item.new("bread", 1.12),
