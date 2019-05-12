@@ -8,11 +8,8 @@
 # A game is over if a player wins
 # A game is over when all fields are taken
 
-
-
-
 class Tic_tac_toe_game
-  
+  attr_reader :board
   def initialize
     @board = [
       [' ', ' ', ' '],
@@ -25,23 +22,22 @@ class Tic_tac_toe_game
     @active_player = @player_1
   end
 
+  def input(input)
+    input_arr = input.split(',')
+    return invalid_input_message unless validate_input(input_arr)
+    input_arr.map!{ |input_val| input_val.strip.to_i }
+    move(input_arr[0], input_arr[1])
+  end
+
   def move(row, column)
     return position_filled_message(row, column) if position_filled?(row, column)
-    unless game_over?
-      @board[row][column] = @active_player
-      switch_current_player
-    end
+      @board[row][column] = @active_player unless game_over?
+      switch_current_player unless game_over?
     return game_state
   end
 
   def game_state
-    output = "Current state of the board:\n"
-    @board.each do |row|
-      row.each do |place|
-        output += "[ #{place} ] "
-      end
-      output += "\n"
-    end
+    output = "Current state of the board:\n" + board_state
     if game_over?
       output += game_over_message 
     else 
@@ -51,6 +47,18 @@ class Tic_tac_toe_game
   end
 
   private
+
+  def board_state
+    output = "       0     1     2  \n"
+    @board.each.with_index do |row, index|
+      output += "  #{index}  "
+      row.each do |place|
+        output += "[ #{place} ] "
+      end
+      output += "\n"
+    end
+    return output
+  end
 
   def game_over?
     return true if row_claimed? || column_claimed? || diagonal_claimed? || board_full?
@@ -83,26 +91,23 @@ class Tic_tac_toe_game
       end
 
       if top_right == center
-      claimed = true if bottom_left == center
+        claimed = true if bottom_left == center
       end
-      
     end
     claimed
   end
 
   def board_full?
     @board.none? { |row| row.include?(' ') }
-
   end
 
   def position_filled?(row, column)
     @board[row][column] != ' '
   end
-  
+
   def position_filled_message(row, column)
     filled_by = @board[row][column]
     return "Sorry, that position has already been filled by #{filled_by.info}"
-
   end
 
   def game_over_message
@@ -110,11 +115,18 @@ class Tic_tac_toe_game
     return "Game over! Noone wins!" if board_full?
   end
 
+  def validate_input(arr)
+    arr.length == 2 && arr.none? { |item| item.strip.to_i > 2 || item.strip.to_i < 0 }
+  end
+
+  def invalid_input_message
+    return "You didn't input a valid move. Try again!"
+  end
 end
 
 class Player
   attr_reader :symbol, :number
-  
+
   def initialize(symbol, number)
     @symbol = symbol
     @number = number
@@ -127,15 +139,87 @@ class Player
   def info
     return "Player #{@number} (#{@symbol.to_s})"
   end
+end
+
+class Tic_tac_toe_game_runner
+  def initialize
+    @game = Tic_tac_toe_game.new
+    puts @game.game_state
+  end
+
+  def run
+    loop do
+      puts "Enter 1 for single player, 2 for two player"
+      input = gets.chomp
+      single_player if input == '1'
+      two_player if input == '2'
+    end
+
+  end
+
+  def two_player
+    loop do
+      puts "Enter the row and column where you want to go, separated by a comma"
+      puts @game.input(gets.chomp)
+    end
+  end
+
+  def single_player
+    exit
+  end
+
 
 end
 
-game = Tic_tac_toe_game.new
-puts game.move(1,2)
-puts game.move(0,1)
-puts game.move(1,1)
-puts game.move(0,2)
-puts game.move(2,1)
-puts game.move(0,0)
-puts game.move(2,2)
+class Computer_player
+  def initialize
+
+  end
+
+  def move(board)
+    if find_good_move(board)
+      find_good_move(board)
+    else
+      pick_move_at_random(board)
+    end
+  end
+
+  def find_good_move(board)
+    return block_horizontal if block_horizontal
+    return block_vertical if block_vertical
+    return block_diagonal if block_diagonal
+    return nil
+  end
+
+  def pick_move_at_random(board)
+
+  end
+
+  def block_horizontal
+    
+  end
+
+  def block_vertical
+
+  end
+
+  def block_diagonal
+
+  end
+
+end
+
+runner = Tic_tac_toe_game_runner.new
+runner.run
+
+
+
+# game = Tic_tac_toe_game.new
+# puts game.move(1,2)
+# puts game.move(0,1)
+# puts game.move(1,1)
+# puts game.move(0,2)
+# puts game.move(2,1)
+# puts game.move(0,0)
+# puts game.move(2,2)
 
