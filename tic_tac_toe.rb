@@ -7,8 +7,7 @@
 # A player wins if they claim all the fields in a row, column or diagonal
 # A game is over if a player wins
 # A game is over when all fields are taken
-# todo:
-# check if someone has already gone in that space
+
 
 
 
@@ -26,44 +25,16 @@ class Tic_tac_toe_game
     @active_player = @player_1
   end
 
-  def game_over?
-    return true if row_claimed? || column_claimed? || diagonal_claimed? || board_full?
-    return false
-  end
-
   def move(row, column)
-    @board[row][column] = @active_player.symbol unless game_over? || position_filled?
-    return game_over_message if game_over?
-    return position_filled_message if position_filled?
-    switch_current_player
-    return board
+    return position_filled_message(row, column) if position_filled?(row, column)
+    unless game_over?
+      @board[row][column] = @active_player
+      switch_current_player
+    end
+    return game_state
   end
 
-  def switch_current_player
-    @active_player = @active_player == @player_1 ? @player_2 : @player_1
-  end
-
-  def row_claimed?
-    @board.any? { |row| row.uniq == [:x] || row.uniq == [:o] }
-  end
-
-  def column_claimed?
-    @board.transpose.any? { |row| row.uniq == [:x] || row.uniq == [:o] }
-  end
-
-  def diagonal_claimed?
-    false
-  end
-
-  def board_full?
-    false
-  end
-
-  def position_filled?
-    false
-  end
-
-  def board
+  def game_state
     output = "Current state of the board:\n"
     @board.each do |row|
       row.each do |place|
@@ -71,12 +42,72 @@ class Tic_tac_toe_game
       end
       output += "\n"
     end
-    output += "#{@active_player} goes next.\n"
+    if game_over?
+      output += game_over_message 
+    else 
+      output += "#{@active_player.info} goes next.\n"
+    end
     output
   end
+
+  private
+
+  def game_over?
+    return true if row_claimed? || column_claimed? || diagonal_claimed? || board_full?
+    return false
+  end
+
+  def switch_current_player
+    @active_player = @active_player == @player_1 ? @player_2 : @player_1
+  end
+
+  def row_claimed?
+    @board.any? { |row| row.uniq == [@player_1] || row.uniq == [@player_2] }
+  end
+
+  def column_claimed?
+    @board.transpose.any? { |row| row.uniq == [@player_1] || row.uniq == [@player_2] }
+  end
+
+  def diagonal_claimed?
+    center = @board[1][1]
+    claimed = false
+    if center != ' '
+      top_left = @board[0][0]
+      top_right = @board[0][2]
+      bottom_left = @board[2][0]
+      bottom_right = @board[2][2]
+
+      if top_left == center
+        claimed = true if bottom_right == center
+      end
+
+      if top_right == center
+      claimed = true if bottom_left == center
+      end
+      
+    end
+    claimed
+  end
+
+  def board_full?
+    @board.none? { |row| row.include?(' ') }
+
+  end
+
+  def position_filled?(row, column)
+    @board[row][column] != ' '
+  end
   
+  def position_filled_message(row, column)
+    filled_by = @board[row][column]
+    return "Sorry, that position has already been filled by #{filled_by.info}"
+
+  end
+
   def game_over_message
-    return "Game over! #{@active_player} wins!"
+    return "Game over! #{@active_player.info} wins!" if row_claimed? || column_claimed? || diagonal_claimed?
+    return "Game over! Noone wins!" if board_full?
   end
 
 end
@@ -90,16 +121,11 @@ class Player
   end
 
   def to_s
+    return @symbol.to_s
+  end
+
+  def info
     return "Player #{@number} (#{@symbol.to_s})"
-  end
-
-
-  def win_message
-
-  end
-
-  def turn_message
-
   end
 
 end
