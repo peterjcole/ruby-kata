@@ -7,6 +7,9 @@
 # A player wins if they claim all the fields in a row, column or diagonal
 # A game is over if a player wins
 # A game is over when all fields are taken
+# todo:
+# check if someone has already gone in that space
+
 
 
 class Tic_tac_toe_game
@@ -29,8 +32,11 @@ class Tic_tac_toe_game
   end
 
   def move(row, column)
-    @board[row][column] = @active_player.symbol unless game_over?
+    @board[row][column] = @active_player.symbol unless game_over? || position_filled?
+    return game_over_message if game_over?
+    return position_filled_message if position_filled?
     switch_current_player
+    return board
   end
 
   def switch_current_player
@@ -53,6 +59,10 @@ class Tic_tac_toe_game
     false
   end
 
+  def position_filled?
+    false
+  end
+
   def board
     output = "Current state of the board:\n"
     @board.each do |row|
@@ -61,17 +71,26 @@ class Tic_tac_toe_game
       end
       output += "\n"
     end
+    output += "#{@active_player} goes next.\n"
     output
   end
   
+  def game_over_message
+    return "Game over! #{@active_player} wins!"
+  end
+
 end
 
 class Player
   attr_reader :symbol, :number
   
-  def initialize(symbol, nunber)
+  def initialize(symbol, number)
     @symbol = symbol
     @number = number
+  end
+
+  def to_s
+    return "Player #{@number} (#{@symbol.to_s})"
   end
 
 
@@ -86,19 +105,11 @@ class Player
 end
 
 game = Tic_tac_toe_game.new
-puts game.board
-game.move(1,2)
-puts game.board
-game.move(0,1)
-puts game.board
-game.move(1,1)
-puts game.board
-game.move(0,2)
-puts game.board
-game.move(2,1)
-puts game.board
-game.move(0,0)
-puts game.board
-game.move(2,2)
-puts game.board
+puts game.move(1,2)
+puts game.move(0,1)
+puts game.move(1,1)
+puts game.move(0,2)
+puts game.move(2,1)
+puts game.move(0,0)
+puts game.move(2,2)
 
