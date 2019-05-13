@@ -211,7 +211,7 @@ class Computer_player
 
   def move(board)
     # return "0, 1"
-    return pick_move_at_random(board)
+    # return pick_move_at_random(board)
     if block_if_threatens_win(board)
       return block_if_threatens_win(board)
     else
@@ -221,6 +221,7 @@ class Computer_player
 
   def block_if_threatens_win(board)
     return block_horizontal_win(board) if block_horizontal_win(board)
+    return pick_move_at_random(board)
     return block_vertical_win(board) if block_vertical_win(board)
     return block_diagonal_win(board) if block_diagonal_win(board)
     return nil
@@ -237,16 +238,21 @@ class Computer_player
   def block_horizontal_win(board)
     block_position = []
     board.each.with_index do |row, row_index|
-      if enemy(row[1]) && row.uniq
+      if enemy(row[1]) && not_full(row)
         block_position.push([row_index, [0]]) if enemy(row[2])
-        # block_position.push
+        block_position.push([row_index, [2]]) if enemy(row[0])
       end
       block_position.push
     end
+    block_position[0] ? block_position.sample.join(', ') : nil
   end
 
   def enemy(position)
     position != ' ' && position != self
+  end
+
+  def not_full(row)
+    row.include? ' '
   end
 
   def block_vertical_win(board)
