@@ -3,15 +3,16 @@ def input_students
   puts "To finish, just hit return twice"
 
   students = []
-  name = gets.chomp
+  name = STDIN.gets.chomp
 
+  
 
   until name.empty? do
     students << {name: name, cohort: :november}
 
     puts "Now we have #{students.count} students"
 
-
+STDIN.gets
     name = gets.chomp
   end
 

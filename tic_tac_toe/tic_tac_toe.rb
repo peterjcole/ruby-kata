@@ -8,18 +8,30 @@
 # A game is over if a player wins
 # A game is over when all fields are taken
 
+# TODO: computer player should only be called if player's previous move was valid - game over variable?
+# computer player should probably be player 2, so initialise done by game runner, and input handled by player class?
+
 class Tic_tac_toe_game
-  attr_reader :board
-  def initialize
+  attr_reader :board, :active_player, :inactive_player, :game_over
+  def initialize(num_players)
     @board = [
       [' ', ' ', ' '],
       [' ', ' ', ' '],
       [' ', ' ', ' ']
     ]
 
-    @player_1 = Player.new(:x, 1)
-    @player_2 = Player.new(:o, 2)
+    if num_players == 2
+      @player_1 = Player.new(:x, 1)
+      @player_2 = Player.new(:o, 2)
+    elsif num_players == 1
+      @player_1 = Player.new(:x, 1)
+      @player_2 = Computer_player.new(:o, 2)
+    else 
+      return nil
+    end
+    @game_over = false
     @active_player = @player_1
+    @inactive_player = @player_2
   end
 
   def input(input)
@@ -31,14 +43,14 @@ class Tic_tac_toe_game
 
   def move(row, column)
     return position_filled_message(row, column) if position_filled?(row, column)
-      @board[row][column] = @active_player unless game_over?
-      switch_current_player unless game_over?
+      @board[row][column] = @active_player unless update_game_over
+      switch_current_player unless update_game_over
     return game_state
   end
 
   def game_state
     output = "Current state of the board:\n" + board_state
-    if game_over?
+    if @game_over
       output += game_over_message 
     else 
       output += "#{@active_player.info} goes next.\n"
@@ -60,13 +72,13 @@ class Tic_tac_toe_game
     return output
   end
 
-  def game_over?
-    return true if row_claimed? || column_claimed? || diagonal_claimed? || board_full?
-    return false
+  def update_game_over
+    @game_over = true if row_claimed? || column_claimed? || diagonal_claimed? || board_full?
+    return @game_over
   end
 
   def switch_current_player
-    @active_player = @active_player == @player_1 ? @player_2 : @player_1
+    @active_player, @inactive_player = @inactive_player, @active_player
   end
 
   def row_claimed?
@@ -125,11 +137,12 @@ class Tic_tac_toe_game
 end
 
 class Player
-  attr_reader :symbol, :number
+  attr_reader :symbol, :number, :player_type
 
   def initialize(symbol, number)
     @symbol = symbol
     @number = number
+    @player_type = :human
   end
 
   def to_s
@@ -142,9 +155,10 @@ class Player
 end
 
 class Tic_tac_toe_game_runner
+
   def initialize
-    @game = Tic_tac_toe_game.new
-    puts @game.game_state
+
+
   end
 
   def run
@@ -158,52 +172,88 @@ class Tic_tac_toe_game_runner
   end
 
   def two_player
+    @game = Tic_tac_toe_game.new(2)
+    puts @game.game_state
     loop do
-      puts "Enter the row and column where you want to go, separated by a comma"
+      puts "Enter the row and column where you want to go, separated by a comma" unless @game.game_over
       puts @game.input(gets.chomp)
     end
   end
 
   def single_player
-    exit
+    @game = Tic_tac_toe_game.new(1)
+    puts @game.game_state
+    loop do
+      puts "Enter the row and column where you want to go, separated by a comma"
+      puts @game.input(gets.chomp)
+      puts @game.input(@game.active_player.move(@game.board)) if @game.active_player.player_type == :computer
+    end
   end
 
 
 end
 
 class Computer_player
-  def initialize
+  attr_reader :symbol, :number, :player_type
+  def initialize(symbol, number)
+    @player_type = :computer
+    @symbol = symbol
+    @number = number
+  end
 
+  def to_s
+    return @symbol.to_s
+  end
+
+  def info
+    return "Computer player #{@number} (#{@symbol.to_s})"
   end
 
   def move(board)
-    if find_good_move(board)
-      find_good_move(board)
+    # return "0, 1"
+    return pick_move_at_random(board)
+    if block_if_threatens_win(board)
+      return block_if_threatens_win(board)
     else
-      pick_move_at_random(board)
+      return pick_move_at_random(board)
     end
   end
 
-  def find_good_move(board)
-    return block_horizontal if block_horizontal
-    return block_vertical if block_vertical
-    return block_diagonal if block_diagonal
+  def block_if_threatens_win(board)
+    return block_horizontal_win(board) if block_horizontal_win(board)
+    return block_vertical_win(board) if block_vertical_win(board)
+    return block_diagonal_win(board) if block_diagonal_win(board)
     return nil
   end
 
   def pick_move_at_random(board)
+    valid_moves = []
+    board.each.with_index do |row, row_index|
+      row.each.with_index { |piece, column_index| valid_moves.push([row_index, column_index]) if piece == ' ' }
+    end
+    return valid_moves.sample.join(', ')
+  end
+
+  def block_horizontal_win(board)
+    block_position = []
+    board.each.with_index do |row, row_index|
+      if enemy(row[1]) && row.uniq
+        block_position.push([row_index, [0]]) if enemy(row[2])
+        # block_position.push
+      end
+      block_position.push
+    end
+  end
+
+  def enemy(position)
+    position != ' ' && position != self
+  end
+
+  def block_vertical_win(board)
 
   end
 
-  def block_horizontal
-    
-  end
-
-  def block_vertical
-
-  end
-
-  def block_diagonal
+  def block_diagonal_win(board)
 
   end
 
@@ -212,6 +262,10 @@ end
 runner = Tic_tac_toe_game_runner.new
 runner.run
 
+# game = Tic_tac_toe_game.new
+# puts game.move(0, 2)
+# player = Computer_player.new
+# puts game.input(player.move(game.board))
 
 
 # game = Tic_tac_toe_game.new
@@ -223,3 +277,4 @@ runner.run
 # puts game.move(0,0)
 # puts game.move(2,2)
 
+# computer player needs to know

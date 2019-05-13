@@ -1,19 +1,17 @@
 def wave(str)
   wave = []
-  str.delete(' ').length.times do |i|
+  current_char = 0
+  str.delete(' ').length.times do
     str_array = str.downcase.split('')    
     loop do
-      unless str_array[i] == ' ' then
-        str_array[i].upcase!
+      unless str_array[current_char] == ' '
+        str_array[current_char].upcase!
         break
       end
-      i += 1
+      current_char += 1
     end
     wave.push(str_array.join(''))
+    current_char += 1
   end
   wave
 end
-
-puts wave('hello')
-
-

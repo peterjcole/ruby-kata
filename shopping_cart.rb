@@ -135,12 +135,12 @@ end
 
 def get_action
   puts "Enter an action\nAvailable actions: list, price, scan, total, pay, leave"
-  gets.chomp
+  STDIN.gets.chomp
 end
 
 def get_argument(action)
   puts "Enter what you want to #{action}"
-  gets.chomp
+  STDIN.gets.chomp
 end
 
 test_merch = [
