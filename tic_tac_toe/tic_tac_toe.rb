@@ -247,20 +247,28 @@ class Computer_player
     block_position[0] ? block_position.sample.join(', ') : nil
   end
 
+  def block_vertical_win(board)
+    block_position = []
+    board.transpose.each.with_index do |row, row_index|
+      if enemy(row[1]) && not_full(row)
+        block_position.push([row_index, [0]]) if enemy(row[2])
+        block_position.push([row_index, [2]]) if enemy(row[0])
+      end
+      block_position.push
+    end
+    block_position[0] ? block_position.sample.join(', ') : nil
+  end
+
+  def block_diagonal_win(board)
+
+  end
+
   def enemy(position)
     position != ' ' && position != self
   end
 
   def not_full(row)
     row.include? ' '
-  end
-
-  def block_vertical_win(board)
-
-  end
-
-  def block_diagonal_win(board)
-
   end
 
 end
